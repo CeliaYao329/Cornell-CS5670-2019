@@ -1,6 +1,6 @@
-import os
 import cv2
 import numpy as np
+
 
 def warpLocal(src, uv):
     '''
@@ -17,11 +17,11 @@ def warpLocal(src, uv):
                   dimensions are (rows, cols, color bands BGR).
     '''
     width = src.shape[1]
-    height  = src.shape[0]
-    mask = cv2.inRange(uv[:,:,1],0,height-1.0)&cv2.inRange(uv[:,:,0],0,width-1.0)
-    warped = cv2.remap(src, uv[:, :, 0].astype(np.float32),\
-             uv[:, :, 1].astype(np.float32), cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
-    img2_fg = cv2.bitwise_and(warped,warped,mask = mask)
+    height = src.shape[0]
+    mask = cv2.inRange(uv[:, :, 1], 0, height - 1.0) & cv2.inRange(uv[:, :, 0], 0, width - 1.0)
+    warped = cv2.remap(src, uv[:, :, 0].astype(np.float32), \
+                       uv[:, :, 1].astype(np.float32), cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    img2_fg = cv2.bitwise_and(warped, warped, mask=mask)
     return img2_fg
 
 
@@ -77,12 +77,12 @@ def computeSphericalWarpMappings(dstShape, f, k1, k2):
     zt = np.cos(xf) * np.cos(yf)
 
     # project the point to the z=1 plane
-    xt = xt/zt
-    yt = yt/zt
+    xt = xt / zt
+    yt = yt / zt
 
     # distort with radial distortion
     r_square = np.square(xt) + np.square(yt)
-    cof = 1 + k1*r_square + k2*np.square(r_square)
+    cof = 1 + k1 * r_square + k2 * np.square(r_square)
     xt = xt * cof
     yt = yt * cof
 
@@ -116,9 +116,7 @@ def warpSpherical(image, focalLength, k1=-0.21, k2=0.26):
     # compute the addresses of each pixel of the output image in the
     # source image
     uv = computeSphericalWarpMappings(np.array(image.shape), focalLength, k1, \
-        k2)
+                                      k2)
 
     # warp image based on backwards coordinates
     return warpLocal(image, uv)
-
-
