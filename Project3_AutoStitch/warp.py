@@ -55,7 +55,7 @@ def computeSphericalWarpMappings(dstShape, f, k1, k2):
     # (x,y) is the spherical image coordinates.
     # (xf,yf) is the spherical coordinates, e.g., xf is the angle theta
     # and yf is the angle phi
-    one = np.ones((dstShape[0],dstShape[1]))
+    one = np.ones((dstShape[0], dstShape[1]))
     xf = one * np.arange(dstShape[1])
     yf = one.T * np.arange(dstShape[0])
     yf = yf.T
@@ -70,14 +70,31 @@ def computeSphericalWarpMappings(dstShape, f, k1, k2):
     # Use xf, yf as input for your code block and compute xt, yt
     # as output for your code. They should all have the shape
     # (img_height, img_width)
+
+    # compute the Euclidean coordinates
+    xt = np.sin(xf) * np.cos(yf)
+    yt = np.sin(yf)
+    zt = np.cos(xf) * np.cos(yf)
+
+    # project the point to the z=1 plane
+    xt = xt/zt
+    yt = yt/zt
+
+    # distort with radial distortion
+    r_square = np.square(xt) + np.square(yt)
+    cof = 1 + k1*r_square + k2*np.square(r_square)
+    xt = xt * cof
+    yt = yt * cof
+
     # TODO-BLOCK-BEGIN
-    raise Exception("TODO in warp.py not implemented")
+
+    # raise Exception("TODO in warp.py not implemented")
     # TODO-BLOCK-END
     # END TODO
     # Convert back to regular pixel coordinates
     xn = 0.5 * dstShape[1] + xt * f
     yn = 0.5 * dstShape[0] + yt * f
-    uvImg = np.dstack((xn,yn))
+    uvImg = np.dstack((xn, yn))
     return uvImg
 
 
