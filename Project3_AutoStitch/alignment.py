@@ -61,7 +61,7 @@ def computeHomography(f1, f2, matches, A_out=None):
     # BEGIN TODO 3
     # Fill the homography H with the appropriate elements of the SVD
     # TODO-BLOCK-BEGIN
-    small_eigenvector = Vt[-1,]
+    small_eigenvector = Vt[-1, ]
     H = small_eigenvector.reshape(H.shape)
     # TODO-BLOCK-END
     # END TODO
@@ -121,6 +121,9 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
             idx = np.random.choice(len(matches), 4)
             selected_matches = [matches[j] for j in idx]
             M = computeHomography(f1, f2, selected_matches)
+            if all(M[0, ] == 0) and all(M[1, ] == 0):
+                i-=1
+                continue
             inliners = getInliers(f1, f2, matches, M, RANSACthresh)
             if len(inliners) > len(most[1]):
                 most = (M, inliners)
