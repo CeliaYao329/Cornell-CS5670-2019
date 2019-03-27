@@ -109,11 +109,13 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
     most = (M, [])
     for i in range(nRANSAC):
         if m == eTranslate:
+            print("running alignPair with etranslate")
             idx = np.random.choice(len(matches), 1)
             selected_matches = [matches[j] for j in idx]
-            (x_t, y_t) = f2[selected_matches[0].trainIdx].pt - f1[selected_matches[0].queryIdx].pt
-            M[0,2] = x_t
-            M[1,2] = y_t
+            print(f2[selected_matches[0].trainIdx].pt)
+            print(f1[selected_matches[0].queryIdx].pt)
+            M[0,2] = f2[selected_matches[0].trainIdx].pt[0] - f1[selected_matches[0].queryIdx].pt[0]
+            M[1,2] = f2[selected_matches[0].trainIdx].pt[1] - f1[selected_matches[0].queryIdx].pt[1]
             inliners = getInliers(f1, f2, matches, M, RANSACthresh)
             if len(inliners) > len(most[1]):
                 most = (M, inliners)
