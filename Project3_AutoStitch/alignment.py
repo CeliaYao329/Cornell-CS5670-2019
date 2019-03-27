@@ -104,18 +104,15 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
     # This function should also call get_inliers and, at the end,
     # least_squares_fit.
     # TODO-BLOCK-BEGIN
-    M = np.zeros((3, 3))
+    M = np.eye(3)
     M[2,] = np.array([0, 0, 1])
     most = (M, [])
     for i in range(nRANSAC):
         if m == eTranslate:
-            print("running alignPair with etranslate")
             idx = np.random.choice(len(matches), 1)
             selected_matches = [matches[j] for j in idx]
-            print(f2[selected_matches[0].trainIdx].pt)
-            print(f1[selected_matches[0].queryIdx].pt)
-            M[0,2] = f2[selected_matches[0].trainIdx].pt[0] - f1[selected_matches[0].queryIdx].pt[0]
-            M[1,2] = f2[selected_matches[0].trainIdx].pt[1] - f1[selected_matches[0].queryIdx].pt[1]
+            M[0, 2] = f2[selected_matches[0].trainIdx].pt[0] - f1[selected_matches[0].queryIdx].pt[0]
+            M[1, 2] = f2[selected_matches[0].trainIdx].pt[1] - f1[selected_matches[0].queryIdx].pt[1]
             inliners = getInliers(f1, f2, matches, M, RANSACthresh)
             if len(inliners) > len(most[1]):
                 most = (M, inliners)
@@ -175,8 +172,6 @@ def getInliers(f1, f2, matches, M, RANSACthresh):
             [f2[m.trainIdx].pt[0], f2[m.trainIdx].pt[1], 1])  # (b_x, b_y) pixel coordinate in the second image
         a_xy = a_xy.reshape((3, 1))
         proj_a = M.dot(a_xy)
-        # print("M", M)
-        # print("a_xy", a_xy)
         from scipy.spatial import distance
         proj_a /= proj_a[2, 0]
         dst = distance.euclidean(proj_a, b_xy)
