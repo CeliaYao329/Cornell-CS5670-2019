@@ -81,10 +81,10 @@ def accumulateBlend(img, acc, M, blendWidth):
                     continue
 
                 alpha = 1.0
-                if minX <= x and x <= minX + blendWidth:
-                    alpha = float(x - minX) / blendWidth
-                if maxX - blendWidth <= x and x <= maxX:
-                    alpha = min(alpha, float(maxX - x) / blendWidth)
+                if scX <= blendWidth:
+                    alpha = float(scX) / blendWidth
+                if w - blendWidth <= scX and scX <= w:
+                    alpha = min(alpha, float(w - scX) / blendWidth)
 
                 for c in range(3):
                     acc[y, x, c] += img[scY, scX, c] * alpha
