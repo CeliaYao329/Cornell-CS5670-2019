@@ -32,10 +32,47 @@ def compute_photometric_stereo_impl(lights, images):
         normals -- float32 height x width x 3 image with dimensions matching
                    the input images.
     """
-    raise NotImplementedError()
+    N = len(images)
+    (height, width, channel) = images[0].shape
+    pixels = np.zeros((height, width, channel, N), dtype=float)
+    for n in range(N):
+        for h in range(height):
+            for w in range(width):
+                for c in range(channel):
+                    pixels[h, w, c, n] = images[n][h, w, c]
 
+    lights_t = np.transpose(lights)
+    from numpy.linalg import inv
+    from numpy import linalg as LA
+    alb = np.zeros((height, width, channel), dtype=float)
+    normals = np.zeros((height, width, 3), dtype=float)
+    for h in range(height):
+        for w in range(width):
+            g = np.zeros((3, 1), dtype=float)
+            blank = False
+            for c in range(channel):
+                i = pixels[h, w, c, ].transpose()
+                g = inv(np.dot(lights_t, lights)).dot(np.dot(lights_t, i))
+                alb[h, w, c] = LA.norm(g)
+                if alb[h, w, c] < 1e-7:
+                    blank = True
+                    alb[h, w, c] = 0
+            if blank is False:
+                normals[h, w, ] = g.reshape((3,))/LA.norm(g)
+    # print alb, normals
+    return alb, normals
 
-
+# from scipy.misc import imread
+#
+# test_images = [imread('test_materials/sphere%02d.png' % i) for i in xrange(3)]
+# test_lights = np.load('test_materials/sphere_lights.npy')
+# correct_normals = np.load('test_materials/sphere_normals.npy')
+#
+# albedo, normals = compute_photometric_stereo_impl(test_lights.T, test_images)
+# if (np.abs(normals - correct_normals) < 1e-5)[100:-100, 100:-100].all():
+#     print("normal ok")
+# if (np.abs(albedo[100:-100, 100:-100] / 255.0 - 1) < 1e-1).all():
+#     print("albedo ok")
 
 def project_impl(K, Rt, points):
     """
@@ -116,3 +153,5 @@ def compute_ncc_impl(image1, image2):
                image2.
     """
     raise NotImplementedError()
+
+
