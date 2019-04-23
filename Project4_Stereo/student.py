@@ -84,8 +84,18 @@ def project_impl(K, Rt, points):
     Output:
         projections -- height x width x 2 array of 2D projections
     """
-    raise NotImplementedError()
+    height, width, _ = points.shape
+    krt = np.dot(K, Rt)
+    hg = np.concatenate((points, np.ones([height, width, 1])), axis = 2)
 
+    result = np.empty([height, width, 2])
+    for h in range(height):
+        for w in range(width):
+            pt = hg[h, w]
+            projection = np.dot(krt, pt)
+            result[h, w, 0] = projection[0] / projection[2]
+            result[h, w, 1] = projection[1] / projection[2]
+    return result
 
 
 def preprocess_ncc_impl(image, ncc_size):
@@ -127,7 +137,7 @@ def preprocess_ncc_impl(image, ncc_size):
     +------+------+  +------+------+  v
     width ------->
 
-    v = [ x111, x121, x211, x112, x112, x122, x212, x222 ]
+    v = [ x111, x121, x211, x221, x112, x122, x212, x222 ]
 
     see order argument in np.reshape
 
@@ -137,7 +147,23 @@ def preprocess_ncc_impl(image, ncc_size):
     Output:
         normalized -- heigth x width x (channels * ncc_size**2) array
     """
-    raise NotImplementedError()
+    height, width, channel = image.shape
+    s = ncc_size / 2
+
+    result = np.zeros([height, width, ncc_size ** 2 * channel], dtype = np.float32)
+    for h in range(height):
+        for w in range(width):
+            if h - s >= 0 and w - s >= 0 and h + s < height and w + s < width:
+                v = []
+                for c in range(channel):
+                    p = image[h - s: h + s + 1, w - s: w + s + 1, c]
+                    p = p - np.mean(p)
+                    v.extend(p.reshape(-1))
+                norm = np.linalg.norm(v)
+                if norm >= 1e-6:
+                    result[h, w] = v / norm
+
+    return result
 
 
 def compute_ncc_impl(image1, image2):
@@ -152,6 +178,10 @@ def compute_ncc_impl(image1, image2):
         ncc -- height x width normalized cross correlation between image1 and
                image2.
     """
-    raise NotImplementedError()
+    height, width, _ = image1.shape
+    result = np.empty([height, width])
 
-
+    for h in range(height):
+        for w in range(width):
+            result[h, w] = np.correlate(image1[h, w], image2[h, w])
+    return result
